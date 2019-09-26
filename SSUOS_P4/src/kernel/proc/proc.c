@@ -22,7 +22,6 @@ int pid_num_max;
 uint32_t process_stack_ofs;
 static int lock_pid_simple; 
 static int lately_pid;
-static int clock_check=0;
 
 bool more_prio(const struct list_elem *a, const struct list_elem *b, void *aux);
 bool less_time_sleep(const struct list_elem *a, const struct list_elem *b, void *aux);
@@ -158,6 +157,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p -> elem_stat.next = NULL;
 
 	/* You should modify this function... */
+	list
 	list_push_back(&plist, &p->elem_all);
 	list_push_back(&rlist, &p->elem_stat);
 
@@ -237,7 +237,7 @@ void proc_sleep(unsigned ticks)
 	unsigned long cur_ticks = get_ticks();
 
 	/* You should modify this function... */
-	cur_process->time_sleep =  0;
+	cur_process->time_sleep =  cur_ticks + ticks;
 	cur_process->state = PROC_STOP;
 	cur_process->time_slice = 0;
 
@@ -285,6 +285,13 @@ void kernel1_proc(void* aux)
 	while(1)
 	{
 		/* Your code goes here... */
+		if(procs[1].time_used == 140 && passed == 0){
+			printk("Proc 1 I/O at 140");
+			proc_sleep(60);
+			passed = 1;
+		}
+		if(procs[1].time_used == 200)
+			proc_end();
 	}
 }
 
@@ -294,6 +301,13 @@ void kernel2_proc(void* aux)
 	while(1)
 	{
 		/* Your code goes here... */
+		if(procs[2].time_used == 100 && passed == 0){
+			printk("Proc 2 I/O at 100");
+			proc_sleep(60);
+			passed = 1;
+		}
+		if(procs[2].time_used == 120)
+			proc_end();
 	}
 }
 
@@ -304,6 +318,18 @@ void kernel3_proc(void* aux)
 	while(1)
 	{
 		/* Your code goes here... */
+		if(procs[3].time_used == 50 && passed1 == 0){
+			printk("Proc 3 I/O at 50");
+			proc_sleep(60);
+			passed1 = 1;
+		}
+		if(procs[3].time_used == 100 && passed2 == 0){
+			printk("Proc 3 I/O at 100");
+			proc_sleep(60);
+			passed2 = 1;
+		}
+		if(procs[3].time_used == 150)
+			proc_end();
 	}
 }
 

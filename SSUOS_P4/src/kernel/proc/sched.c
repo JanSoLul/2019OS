@@ -44,13 +44,16 @@ void schedule(void)
 	struct process *next;
 
 	/* You shoud modify this function.... */
-
+	idle_process = (int *)&procs[0];
 	proc_wake();
-
-	next = get_next_proc();
+	if(cur_process == idle_process)
+		next = get_next_proc();
+	else
+		next = idle_process;
 	cur = cur_process;
 	cur_process = next;
 	cur_process->time_slice = 0;
-
+	intr_disable();
 	switch_process(cur, next);
+	intr_enalbe();
 }
