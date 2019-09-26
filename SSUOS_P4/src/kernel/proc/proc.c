@@ -22,6 +22,7 @@ int pid_num_max;
 uint32_t process_stack_ofs;
 static int lock_pid_simple; 
 static int lately_pid;
+static int clock_check=0;
 
 bool more_prio(const struct list_elem *a, const struct list_elem *b, void *aux);
 bool less_time_sleep(const struct list_elem *a, const struct list_elem *b, void *aux);
@@ -175,6 +176,11 @@ void recalculate_priority(void)
 	struct process *p = cur_process;
 
 	/* Your code goes here... */
+	if(p->time_slice % 30 == 0){
+		if(p != idle_process){
+			p->priority += p->time_slice/10;	
+		}
+	}
 }
 
 void  proc_start(void)

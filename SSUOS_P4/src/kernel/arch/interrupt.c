@@ -182,6 +182,7 @@ void timer_handler(struct intr_frame *iframe)
 	ticks++;	
 	
 	cur_process->time_slice++;	
+	cur_process->time_used++;
 	recalculate_priority();
 
 	if(cur_process->time_slice >= TIMER_MAX)

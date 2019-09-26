@@ -644,6 +644,8 @@ print_contributors:
 	.section	.debug_str,"MS",@progbits,1
 .LASF3:
 	.string	"long long int"
+.LASF6:
+	.string	"short unsigned int"
 .LASF2:
 	.string	"unsigned int"
 .LASF0:
@@ -676,16 +678,14 @@ print_contributors:
 	.string	"GNU C11 5.4.0 20160609 -m32 -mtune=generic -march=i686 -g -O0 -ffreestanding -fno-stack-protector"
 .LASF9:
 	.string	"SYS_EXIT"
-.LASF6:
-	.string	"short unsigned int"
+.LASF24:
+	.string	"/home/jiwoong/2019OS/SSUOS_P4/src/kernel"
 .LASF4:
 	.string	"signed char"
 .LASF16:
 	.string	"print_contributors"
 .LASF10:
 	.string	"SYS_WAIT"
-.LASF24:
-	.string	"/home/oslab/2019/prev/prev_ssuos_v0.4/src/kernel"
 .LASF5:
 	.string	"short int"
 .LASF21:
