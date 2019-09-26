@@ -21,18 +21,44 @@ struct process* get_next_proc(void)
 	bool found = false;
 	struct process *next = NULL;
 	struct list_elem *elem;
+	int i, j;
+	bool isFirst;
 
 	/* 
 	   You shoud modify this function...
 	   Browse the 'runq' array 
-	*/
+	 */
+	
+	for(i=0; i<RQ_NQS; i++){
+		if(list_size(&runq[i]) > 0)
+			found = true;
+		break;
+	}
 
-	for(elem = list_begin(&rlist); elem != list_end(&rlist); elem = list_next(elem))
-	{
-		struct process *p = list_entry(elem, struct process, elem_stat);
+	if(found){
+		isFirst = true;
+		for(j=1; j<PROC_NUM_MAX; j++){
+			if(procs[j].state == PROC_RUN){
+				if(!isFirst)
+					printk(", ");
+				else
+					isFirst = false;
+				printk("#= %d p= %3d c= %3d u= %3d", 
+						procs[j].pid, procs[j].time_slice,
+						procs[j].priority, procs[j].time_used);
+			}
+			printk("\n");
+		}
 
-		if(p->state == PROC_RUN)
+		for(elem = list_begin(&runq[i]); elem != list_end(&runq[i]); elem = list_next(elem))
+		{
+			struct process *p = list_entry(elem, struct process, elem_stat);
+
+			if(p->state == PROC_RUN)
+				printk("Selected : %d\n", p->pid);
+			list_remove(elem);
 			return p;
+		}
 	}
 
 	return next;
@@ -55,5 +81,5 @@ void schedule(void)
 	cur_process->time_slice = 0;
 	intr_disable();
 	switch_process(cur, next);
-	intr_enalbe();
+	intr_enable();
 }

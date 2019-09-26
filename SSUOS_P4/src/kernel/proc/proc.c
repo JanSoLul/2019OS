@@ -75,6 +75,8 @@ void init_proc()
 	cur_process -> elem_stat.next = NULL;
 
 	/* You should modify this function... */
+	for(i=0; i<RQ_NQS; i++)
+		list_init(&runq[i]);
 	list_push_back(&plist, &cur_process->elem_all);
 	list_push_back(&rlist, &cur_process->elem_stat);
 }
@@ -157,9 +159,11 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p -> elem_stat.next = NULL;
 
 	/* You should modify this function... */
-	list
+	list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
 	list_push_back(&plist, &p->elem_all);
 	list_push_back(&rlist, &p->elem_stat);
+
+	pid_num_max++;
 
 	intr_set_level (old_level);
 	return p->pid;
@@ -227,6 +231,7 @@ void proc_wake(void)
 
 		/* You should modify this function... */
 		list_remove(&p->elem_stat);
+		list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
 		list_push_back(&rlist, &p->elem_stat);
 		p->state = PROC_RUN;
 	}
@@ -259,6 +264,7 @@ void proc_unblock(struct process* proc)
 	int idx;
 	
 	/* You shoud modify this function... */
+	list_push_back(&runq[proc->priority/RQ_PPQ], &proc->elem_stat);
 	list_push_back(&rlist, &proc->elem_stat);
 	proc->state = PROC_RUN;
 }     
@@ -286,7 +292,7 @@ void kernel1_proc(void* aux)
 	{
 		/* Your code goes here... */
 		if(procs[1].time_used == 140 && passed == 0){
-			printk("Proc 1 I/O at 140");
+			printk("Proc 1 I/O at 140\n");
 			proc_sleep(60);
 			passed = 1;
 		}
@@ -302,7 +308,7 @@ void kernel2_proc(void* aux)
 	{
 		/* Your code goes here... */
 		if(procs[2].time_used == 100 && passed == 0){
-			printk("Proc 2 I/O at 100");
+			printk("Proc 2 I/O at 100\n");
 			proc_sleep(60);
 			passed = 1;
 		}
@@ -319,12 +325,12 @@ void kernel3_proc(void* aux)
 	{
 		/* Your code goes here... */
 		if(procs[3].time_used == 50 && passed1 == 0){
-			printk("Proc 3 I/O at 50");
+			printk("Proc 3 I/O at 50\n");
 			proc_sleep(60);
 			passed1 = 1;
 		}
 		if(procs[3].time_used == 100 && passed2 == 0){
-			printk("Proc 3 I/O at 100");
+			printk("Proc 3 I/O at 100\n");
 			proc_sleep(60);
 			passed2 = 1;
 		}
