@@ -180,13 +180,17 @@ You shold modify this function...
 void timer_handler(struct intr_frame *iframe)
 {
 	ticks++;	
-	
-	cur_process->time_slice++;	
-	cur_process->time_used++;
+
+	if(cur_process->state == PROC_RUN){
+		cur_process->time_slice++;	
+		cur_process->time_used++;
+	}
 	recalculate_priority();
 
-	if(cur_process->time_slice >= TIMER_MAX)
+	if(cur_process->time_slice >= TIMER_MAX){
+		list_push_back(&runq[cur_process->priority/RQ_PPQ], &cur_process->elem_stat);
 		do_sched_on_return();
+	}
 
 #ifdef SCREEN_SCROLL
 	static unsigned long refresh_ticks = 0;

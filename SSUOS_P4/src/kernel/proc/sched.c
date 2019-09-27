@@ -19,22 +19,27 @@ int scheduling; 					// interrupt.c
 struct process* get_next_proc(void) 
 {
 	bool found = false;
-	struct process *next = NULL;
+	struct process *next = &procs[0];
 	struct list_elem *elem;
 	int i, j;
-	bool isFirst;
+	bool isFirst, isPrint;
 
 	/* 
 	   You shoud modify this function...
 	   Browse the 'runq' array 
 	 */
-	
+	found = false;
 	for(i=0; i<RQ_NQS; i++){
-		if(list_size(&runq[i]) > 0)
+		if(list_size(&runq[i]) > 0){
 			found = true;
-		break;
+			break;
+		}
 	}
-
+	//
+	if(!found){
+		//printk("not found %ld\n", get_ticks());
+	}
+	//
 	if(found){
 		isFirst = true;
 		for(j=1; j<PROC_NUM_MAX; j++){
@@ -43,24 +48,23 @@ struct process* get_next_proc(void)
 					printk(", ");
 				else
 					isFirst = false;
-				printk("#= %d p= %3d c= %3d u= %3d", 
-						procs[j].pid, procs[j].time_slice,
-						procs[j].priority, procs[j].time_used);
+				printk("#= %d p= %3d ", 
+						procs[j].pid, procs[j].priority);
+				printk("c= %3d u= %3d",
+						procs[j].time_slice, procs[j].time_used);
 			}
-			printk("\n");
 		}
-
+		printk("\n");
 		for(elem = list_begin(&runq[i]); elem != list_end(&runq[i]); elem = list_next(elem))
 		{
 			struct process *p = list_entry(elem, struct process, elem_stat);
-
-			if(p->state == PROC_RUN)
+			if(p->state == PROC_RUN){
 				printk("Selected : %d\n", p->pid);
-			list_remove(elem);
-			return p;
+				list_remove(elem);
+				return p;
+			}
 		}
 	}
-
 	return next;
 }
 
@@ -70,7 +74,6 @@ void schedule(void)
 	struct process *next;
 
 	/* You shoud modify this function.... */
-	idle_process = (int *)&procs[0];
 	proc_wake();
 	if(cur_process == idle_process)
 		next = get_next_proc();

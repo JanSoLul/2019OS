@@ -41,6 +41,7 @@ Hint : use 'printk' function to trace function call
 void init_proc()
 {
 	int i;
+	pid_num_max = 0;
 	process_stack_ofs = offsetof (struct process, stack);
 
 	lock_pid_simple = 0;
@@ -76,7 +77,7 @@ void init_proc()
 
 	/* You should modify this function... */
 	for(i=0; i<RQ_NQS; i++)
-		list_init(&runq[i]);
+		list_init(&(runq[i]));
 	list_push_back(&plist, &cur_process->elem_all);
 	list_push_back(&rlist, &cur_process->elem_stat);
 }
@@ -159,10 +160,8 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p -> elem_stat.next = NULL;
 
 	/* You should modify this function... */
-	list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
 	list_push_back(&plist, &p->elem_all);
-	list_push_back(&rlist, &p->elem_stat);
-
+	list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
 	pid_num_max++;
 
 	intr_set_level (old_level);
@@ -232,7 +231,6 @@ void proc_wake(void)
 		/* You should modify this function... */
 		list_remove(&p->elem_stat);
 		list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
-		list_push_back(&rlist, &p->elem_stat);
 		p->state = PROC_RUN;
 	}
 }
@@ -240,6 +238,7 @@ void proc_wake(void)
 void proc_sleep(unsigned ticks)
 {
 	unsigned long cur_ticks = get_ticks();
+	int i;
 
 	/* You should modify this function... */
 	cur_process->time_sleep =  cur_ticks + ticks;
@@ -265,7 +264,6 @@ void proc_unblock(struct process* proc)
 	
 	/* You shoud modify this function... */
 	list_push_back(&runq[proc->priority/RQ_PPQ], &proc->elem_stat);
-	list_push_back(&rlist, &proc->elem_stat);
 	proc->state = PROC_RUN;
 }     
 
@@ -292,9 +290,11 @@ void kernel1_proc(void* aux)
 	{
 		/* Your code goes here... */
 		if(procs[1].time_used == 140 && passed == 0){
+			intr_disable();
 			printk("Proc 1 I/O at 140\n");
 			proc_sleep(60);
 			passed = 1;
+			intr_enable();
 		}
 		if(procs[1].time_used == 200)
 			proc_end();
@@ -308,9 +308,11 @@ void kernel2_proc(void* aux)
 	{
 		/* Your code goes here... */
 		if(procs[2].time_used == 100 && passed == 0){
+			intr_disable();
 			printk("Proc 2 I/O at 100\n");
 			proc_sleep(60);
 			passed = 1;
+			intr_enable();
 		}
 		if(procs[2].time_used == 120)
 			proc_end();
@@ -325,14 +327,18 @@ void kernel3_proc(void* aux)
 	{
 		/* Your code goes here... */
 		if(procs[3].time_used == 50 && passed1 == 0){
+			intr_disable();
 			printk("Proc 3 I/O at 50\n");
 			proc_sleep(60);
 			passed1 = 1;
+			intr_enable();
 		}
 		if(procs[3].time_used == 100 && passed2 == 0){
+			intr_disable();
 			printk("Proc 3 I/O at 100\n");
 			proc_sleep(60);
 			passed2 = 1;
+			intr_enable();
 		}
 		if(procs[3].time_used == 150)
 			proc_end();
@@ -354,11 +360,11 @@ void idle(void* aux)
 {
 	struct proc_option opt1 = { .priority = 50 };
 	struct proc_option opt2 = { .priority = 50 };
-	//struct proc_option opt3 = { .priority = 30 };
+	struct proc_option opt3 = { .priority = 30 };
 
 	proc_create(kernel1_proc, &opt1, NULL);
 	proc_create(kernel2_proc, &opt2, NULL);
-	//proc_create(kernel3_proc, &opt3, NULL);
+	proc_create(kernel3_proc, &opt3, NULL);
 
 
 	while(1) {  
