@@ -22,7 +22,7 @@ struct process* get_next_proc(void)
 	struct process *next = &procs[0];
 	struct list_elem *elem;
 	int i, j;
-	bool isFirst, isPrint;
+	bool isFirst;
 
 	/* 
 	   You shoud modify this function...
@@ -35,11 +35,6 @@ struct process* get_next_proc(void)
 			break;
 		}
 	}
-	//
-	if(!found){
-		//printk("not found %ld\n", get_ticks());
-	}
-	//
 	if(found){
 		isFirst = true;
 		for(j=1; j<PROC_NUM_MAX; j++){

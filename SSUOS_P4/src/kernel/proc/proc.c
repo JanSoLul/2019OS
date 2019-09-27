@@ -77,7 +77,7 @@ void init_proc()
 
 	/* You should modify this function... */
 	for(i=0; i<RQ_NQS; i++)
-		list_init(&(runq[i]));
+		list_init(&runq[i]);
 	list_push_back(&plist, &cur_process->elem_all);
 	list_push_back(&rlist, &cur_process->elem_stat);
 }
@@ -238,7 +238,6 @@ void proc_wake(void)
 void proc_sleep(unsigned ticks)
 {
 	unsigned long cur_ticks = get_ticks();
-	int i;
 
 	/* You should modify this function... */
 	cur_process->time_sleep =  cur_ticks + ticks;
