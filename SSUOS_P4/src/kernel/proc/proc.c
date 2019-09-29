@@ -79,7 +79,6 @@ void init_proc()
 	for(i=0; i<RQ_NQS; i++)
 		list_init(&runq[i]);
 	list_push_back(&plist, &cur_process->elem_all);
-	list_push_back(&rlist, &cur_process->elem_stat);
 }
 
 pid_t getValidPid(int *idx) {
@@ -161,7 +160,8 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 
 	/* You should modify this function... */
 	list_push_back(&plist, &p->elem_all);
-	list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
+	proc_getpos(p->priority, &idx);
+	list_push_back(&runq[idx], &p->elem_stat);
 	pid_num_max++;
 
 	intr_set_level (old_level);
@@ -230,7 +230,8 @@ void proc_wake(void)
 
 		/* You should modify this function... */
 		list_remove(&p->elem_stat);
-		list_push_back(&runq[p->priority/RQ_PPQ], &p->elem_stat);
+		proc_getpos(p->priority, &idx);
+		list_push_back(&runq[idx], &p->elem_stat);
 		p->state = PROC_RUN;
 	}
 }
@@ -262,7 +263,8 @@ void proc_unblock(struct process* proc)
 	int idx;
 	
 	/* You shoud modify this function... */
-	list_push_back(&runq[proc->priority/RQ_PPQ], &proc->elem_stat);
+	proc_getpos(proc->priority, &idx);
+	list_push_back(&runq[idx], &proc->elem_stat);
 	proc->state = PROC_RUN;
 }     
 
@@ -359,11 +361,11 @@ void idle(void* aux)
 {
 	struct proc_option opt1 = { .priority = 50 };
 	struct proc_option opt2 = { .priority = 50 };
-	struct proc_option opt3 = { .priority = 30 };
+	//struct proc_option opt3 = { .priority = 30 };
 
 	proc_create(kernel1_proc, &opt1, NULL);
 	proc_create(kernel2_proc, &opt2, NULL);
-	proc_create(kernel3_proc, &opt3, NULL);
+	//proc_create(kernel3_proc, &opt3, NULL);
 
 
 	while(1) {  
@@ -374,6 +376,7 @@ void idle(void* aux)
 void proc_getpos(int priority, int *idx) 
 {
 	/* Your code goes here... */
+	*idx = priority / RQ_PPQ;
 }
 
 void proc_print_data()
