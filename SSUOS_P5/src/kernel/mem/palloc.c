@@ -60,6 +60,7 @@ palloc_get_multiple (size_t page_cnt)
 	if (page_cnt == 0)
 		return NULL;
 
+	//palloc page by freelist//
 	while(khpage != NULL){
 		if(khpage->nalloc == page_cnt){
 			page_idx = ((uint32_t)khpage - (uint32_t)khpage_list)/sizeof(struct khpage);
@@ -80,6 +81,7 @@ palloc_get_multiple (size_t page_cnt)
 		khpage = khpage->next;
 	}
 
+	//not match page in freelist
 	if(pages == NULL){
 		pages = (void*)(VKERNEL_HEAP_START + page_alloc_index * PAGE_SIZE);
 		page_idx = page_alloc_index;
@@ -90,6 +92,10 @@ palloc_get_multiple (size_t page_cnt)
 	{
 		memset (pages, 0, PAGE_SIZE * page_cnt);
 	}
+
+	printk("%d %d\n", F_IDX((uint32_t *)pages, CAPACITY),
+				S_IDX((uint32_t *)pages, CAPACITY));
+
 
 	return (uint32_t*)pages; 
 }
