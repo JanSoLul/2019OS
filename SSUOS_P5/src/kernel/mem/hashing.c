@@ -35,3 +35,41 @@ void init_hash_table(void)
 		}
 	}
 }
+
+int level_insert(int fs, uint32_t idx, uint32_t key, uint32_t value){
+	int si = getSlotNum(fs, idx);
+	if(si == -1)
+		return -1;
+	if(fs == 0){
+		lh.top_buckets[idx].slot[si].key = key;
+		lh.top_buckets[idx].slot[si].value = value;
+		lh.top_buckets[idx].token[si] = 1;
+		printk("hash value inserted in top level : idx : %d, key : %d, value : %d\n", idx, key, value);
+		return 0;
+	}
+	else{
+		lh.bottom_buckets[idx/2].slot[si].key = key;
+		lh.bottom_buckets[idx/2].slot[si].value = value;
+		lh.bottom_buckets[idx/2].token[si] = 1;
+		printk("hash value inserted in bottom level : idx : %d, key : %d, value : %d\n", idx, key, value);
+		return 0;
+
+	}
+}
+
+int getSlotNum(int fs, uint32_t idx){
+	int i=0;
+	if(fs == 0){
+		for(i=0; i<SLOT_NUM; i++){
+			if(lh.top_buckets[idx].token[i] == 0)
+				return i;
+		}
+	}
+	else{
+		for(i=0; i<SLOT_NUM; i++){
+			if(lh.bottom_buckets[idx/2].token[i] == 0)
+				return i;
+		}
+	}
+	return -1;
+}

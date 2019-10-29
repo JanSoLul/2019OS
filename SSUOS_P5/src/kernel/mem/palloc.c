@@ -56,6 +56,7 @@ palloc_get_multiple (size_t page_cnt)
 	struct khpage *khpage = freelist.list;
 	struct khpage *prepage = freelist.list;
 	size_t page_idx;
+	uint32_t f_idx, s_idx, key, value;
 
 	if (page_cnt == 0)
 		return NULL;
@@ -92,9 +93,12 @@ palloc_get_multiple (size_t page_cnt)
 	{
 		memset (pages, 0, PAGE_SIZE * page_cnt);
 	}
-
-	printk("%d %d\n", F_IDX((uint32_t *)pages, CAPACITY),
-				S_IDX((uint32_t *)pages, CAPACITY));
+	f_idx = F_IDX((uint32_t *)pages, CAPACITY);
+	s_idx = S_IDX((uint32_t *)pages, CAPACITY);
+	key = pte_idx_addr(pages);
+	value = VH_TO_RH(pages);
+	printk("hash value inserted in top level : idx : %d, key : %d, value : %x\n", f_idx, key, value);
+	
 
 
 	return (uint32_t*)pages; 
