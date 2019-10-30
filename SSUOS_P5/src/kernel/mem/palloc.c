@@ -97,7 +97,33 @@ palloc_get_multiple (size_t page_cnt)
 	s_idx = S_IDX((uint32_t *)pages, CAPACITY);
 	key = pte_idx_addr(pages);
 	value = VH_TO_RH(pages);
-	printk("hash value inserted in top level : idx : %d, key : %d, value : %x\n", f_idx, key, value);
+	if(level_insert(0, f_idx, key, value) == -1){
+		if(level_insert(0, s_idx, key, value) == -1){
+			if(level_insert(1, f_idx, key, value) == -1){
+				if(level_insert(1, s_idx, key, value) == -1){
+					if(moveBucket(0, f_idx) == 0)
+						level_insert(0, f_idx, key, value);
+					else{
+						if(moveBucket(0, s_idx) == 0)
+							level_insert(0, s_idx, key, value);
+						else{
+							if(moveBucket(1, f_idx) == 0)
+								level_insert(1, f_idx, key, value);
+							else{
+								if(moveBucket(1, s_idx) == 0)
+									level_insert(1, s_idx, key, value);
+								else{
+									printk("insert failed!\n");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+			
+	
 	
 
 
@@ -118,6 +144,7 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 {
 	struct khpage *khpage = freelist.list;
 	size_t page_idx = (((uint32_t)pages - VKERNEL_HEAP_START) / PAGE_SIZE);
+	uint32_t f_idx, s_idx, key, value;
 
 	if (pages == NULL || page_cnt == 0)
 		return;
@@ -137,6 +164,14 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 		khpage->next->nalloc = page_cnt;
 		khpage->next->next = NULL;
 	}
+	f_idx = F_IDX((uint32_t *)pages, CAPACITY);
+	s_idx = S_IDX((uint32_t *)pages, CAPACITY);
+	key = pte_idx_addr(pages);
+	value = VH_TO_RH(pages);
+	level_delete(key, value);
+	
+	
+
 
 	freelist.nfree++;
 }

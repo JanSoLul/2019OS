@@ -34,8 +34,10 @@ level_hash hash_table;
 void init_hash_table(void);
 uint32_t F_IDX(uint32_t addr, uint32_t capacity);	// Get first index to use at table
 uint32_t S_IDX(uint32_t addr, uint32_t capacity);	// Get second index to use at table
-int level_insert(int fs, uint32_t idx, uint32_t key, uint32_t value);
-int getSlotNum(int fs, uint32_t idx);
+int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value);
+int getSlotNum(int tb, uint32_t idx);
+int moveBucket(int tb, uint32_t idx);
+int level_delete(uint32_t key, uint32_t value);
 
 
 #endif
