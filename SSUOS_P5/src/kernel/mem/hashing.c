@@ -109,14 +109,16 @@ int level_delete(uint32_t key, uint32_t value){
 	for(i=0; i<CAPACITY; i++){
 		for(j=0; j<SLOT_NUM; j++){
 			if(hash_table.top_buckets[i].token[j] == 1
-				&& hash_table.top_buckets[i].slot[j].key == key){
+				&& hash_table.top_buckets[i].slot[j].key == key
+				&& hash_table.top_buckets[i].slot[j].value == value){
 				hash_table.top_buckets[i].token[j] = 0;
 				printk("hash value deleted : idx : %d, key : %d, value : %x\n", i, key, value);
 				return 0;
 			}	
 			if(i%2 == 0){
 				if(hash_table.bottom_buckets[i/2].token[j] == 1
-						&& hash_table.bottom_buckets[i/2].slot[j].key == key){
+						&& hash_table.bottom_buckets[i/2].slot[j].key == key
+						&& hash_table.bottom_buckets[i/2].slot[j].value == value){
 					hash_table.bottom_buckets[i/2].token[j] = 0;
 					printk("hash value deleted : idx : %d, key : %d, value : %x\n", i/2, key, value);
 					return 0;
