@@ -196,12 +196,9 @@ main_init:
 	addl	$16, %esp
 	.loc 1 85 0
 	call	refreshScreen
-	.loc 1 88 0
-	nop
-	leave
-	.cfi_restore 5
-	.cfi_def_cfa 4, 4
-	ret
+.L4:
+	.loc 1 87 0 discriminator 1
+	jmp	.L4
 	.cfi_endproc
 .LFE19:
 	.size	main_init, .-main_init

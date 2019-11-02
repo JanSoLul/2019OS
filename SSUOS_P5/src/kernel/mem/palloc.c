@@ -209,6 +209,7 @@ void palloc_pf_test(void)
 
 	printk("=----------------------------------=\n");
 	palloc_free_multiple(one_page2, 3);
+	one_page2 = palloc_get_page();
 	three_page = palloc_get_multiple(3);
 
 	printk("one_page1 = %x\n", one_page1);

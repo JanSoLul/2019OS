@@ -42,7 +42,7 @@ int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value){
 		hash_table.top_buckets[idx].slot[si].key = key;
 		hash_table.top_buckets[idx].slot[si].value = value;
 		hash_table.top_buckets[idx].token[si] = 1;
-		printk("hash value inserted in top level : idx : %d, key : %d, value : %x\n", idx, key, value);
+		printk("hash value inserted in top level : idx : %d, key : %d, value : %x %d\n", idx, key, value, F_IDX(value, CAPACITY));
 		return 0;
 	}
 	else{
