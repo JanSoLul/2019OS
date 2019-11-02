@@ -168,7 +168,7 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 	s_idx = S_IDX((uint32_t *)pages, CAPACITY);
 	key = pte_idx_addr(pages);
 	value = VH_TO_RH(pages);
-	level_delete(key, value);
+	level_delete(f_idx, s_idx, key, value);
 	
 	
 

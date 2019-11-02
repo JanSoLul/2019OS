@@ -76,53 +76,58 @@ int moveBucket(int tb, uint32_t idx){
 	int i=0;
 	int si;
 	int tmp;
-	for(i=0; i<CAPACITY; i++){
-		tmp = i;
-		if(tb == 1){
-			if(i%2 == 1)
-				continue;
-			else
-				tmp /= 2;
-		}
-		si = getSlotNum(tb, tmp);	
-		if(si != -1){
-			if(tb == 0){
-				hash_table.top_buckets[tmp].token[si] = 1;
-				hash_table.top_buckets[tmp].slot[si].key = hash_table.top_buckets[idx].slot[0].key;
-				hash_table.top_buckets[tmp].slot[si].value = hash_table.top_buckets[idx].slot[0].value;
-				hash_table.top_buckets[idx].token[0] = 0;
+	int f_idx, s_idx;
+
+	if(tb == 0){
+		tmp = f_idx;
+		if((si = getSlotNum(tb, f_idx)) == -1){
+			tmp = s_idx;
+			if((si = getSlotNum(tb, s_idx)) == -1){
+				return -1;
 			}
-			else{
-				hash_table.bottom_buckets[tmp].token[si] = 1;
-				hash_table.bottom_buckets[tmp].slot[si].key = hash_table.bottom_buckets[idx/2].slot[0].key;
-				hash_table.bottom_buckets[tmp].slot[si].value = hash_table.bottom_buckets[idx/2].slot[0].value;
-				hash_table.bottom_buckets[idx/2].token[0] = 0;
-			}
-			return 0;
 		}
+		hash_table.top_buckets[tmp].token[si] = 1;
+		hash_table.top_buckets[tmp].slot[si].key = hash_table.top_buckets[idx].slot[0].key;
+		hash_table.top_buckets[tmp].slot[si].value = hash_table.top_buckets[idx].slot[0].value;
+		hash_table.top_buckets[idx].token[0] = 0;
+
 	}
-	return -1;
+	else{
+		tmp = f_idx/2;
+		if((si = getSlotNum(tb, f_idx)) == -1){
+			tmp = s_idx/2;
+			if((si = getSlotNum(tb, s_idx)) == -1){
+				return -1;
+			}
+		}
+		hash_table.bottom_buckets[tmp].token[si] = 1;
+		hash_table.bottom_buckets[tmp].slot[si].key = hash_table.bottom_buckets[idx/2].slot[0].key;
+		hash_table.bottom_buckets[tmp].slot[si].value = hash_table.bottom_buckets[idx/2].slot[0].value;
+		hash_table.bottom_buckets[idx/2].token[0] = 0;
+	}
+	return 0;
 }
 
-int level_delete(uint32_t key, uint32_t value){
+int level_delete(uint32_t f_idx, uint32_t s_idx, uint32_t key, uint32_t value){
 	int i, j;
-	for(i=0; i<CAPACITY; i++){
+	uint32_t idx_list[2] = {f_idx, s_idx};
+	for(i=0; i<2; i++){
 		for(j=0; j<SLOT_NUM; j++){
-			if(hash_table.top_buckets[i].token[j] == 1
-				&& hash_table.top_buckets[i].slot[j].key == key
-				&& hash_table.top_buckets[i].slot[j].value == value){
-				hash_table.top_buckets[i].token[j] = 0;
-				printk("hash value deleted : idx : %d, key : %d, value : %x\n", i, key, value);
-				return 0;
-			}	
-			if(i%2 == 0){
-				if(hash_table.bottom_buckets[i/2].token[j] == 1
-						&& hash_table.bottom_buckets[i/2].slot[j].key == key
-						&& hash_table.bottom_buckets[i/2].slot[j].value == value){
-					hash_table.bottom_buckets[i/2].token[j] = 0;
-					printk("hash value deleted : idx : %d, key : %d, value : %x\n", i/2, key, value);
+			if(hash_table.top_buckets[idx_list[i]].token[j] == 1
+				&& hash_table.top_buckets[idx_list[i]].slot[j].key == key){
+				if(hash_table.top_buckets[idx_list[i]].slot[j].value == value){
+					hash_table.top_buckets[idx_list[i]].token[j] = 0;
+					printk("hash value deleted : idx : %d, key : %d, value : %x\n", idx_list[i], key, value);
 					return 0;
-				}		
+				}
+			}
+			if(hash_table.bottom_buckets[idx_list[i]/2].token[j] == 1
+				&& hash_table.bottom_buckets[idx_list[i]/2].slot[j].key == key){
+				if(hash_table.bottom_buckets[idx_list[i]/2].slot[j].value ==value){
+					hash_table.bottom_buckets[idx_list[i]/2].token[j] = 0;
+					printk("hash value deleted : idx : %d, key : %d, value : %x\n", idx_list[i]/2, key, value);
+					return 0;
+				}
 			}
 		}
 	}
