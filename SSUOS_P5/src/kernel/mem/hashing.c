@@ -35,7 +35,7 @@ void init_hash_table(void)
 }
 
 int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value){
-	int si = getSlotNum(tb, idx);
+	int si = get_slot_num(tb, idx);
 	if(si == -1)
 		return -1;
 	if(tb == 0){
@@ -55,7 +55,7 @@ int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value){
 	}
 }
 
-int getSlotNum(int tb, uint32_t idx){
+int get_slot_num(int tb, uint32_t idx){
 	int i=0;
 	if(tb == 0){
 		for(i=0; i<SLOT_NUM; i++){
@@ -72,7 +72,7 @@ int getSlotNum(int tb, uint32_t idx){
 	return -1;
 }
 
-int moveBucket(int tb, uint32_t idx){
+int move_bucket(int tb, uint32_t idx, uint32_t value){
 	int i=0;
 	int si;
 	int tmp;
@@ -80,9 +80,9 @@ int moveBucket(int tb, uint32_t idx){
 
 	if(tb == 0){
 		tmp = f_idx;
-		if((si = getSlotNum(tb, f_idx)) == -1){
+		if((si = get_slot_num(tb, f_idx)) == -1){
 			tmp = s_idx;
-			if((si = getSlotNum(tb, s_idx)) == -1){
+			if((si = get_slot_num(tb, s_idx)) == -1){
 				return -1;
 			}
 		}
@@ -94,9 +94,9 @@ int moveBucket(int tb, uint32_t idx){
 	}
 	else{
 		tmp = f_idx/2;
-		if((si = getSlotNum(tb, f_idx)) == -1){
+		if((si = get_slot_num(tb, f_idx)) == -1){
 			tmp = s_idx/2;
-			if((si = getSlotNum(tb, s_idx)) == -1){
+			if((si = get_slot_num(tb, s_idx)) == -1){
 				return -1;
 			}
 		}
@@ -115,19 +115,15 @@ int level_delete(uint32_t f_idx, uint32_t s_idx, uint32_t key, uint32_t value){
 		for(j=0; j<SLOT_NUM; j++){
 			if(hash_table.top_buckets[idx_list[i]].token[j] == 1
 				&& hash_table.top_buckets[idx_list[i]].slot[j].key == key){
-				if(hash_table.top_buckets[idx_list[i]].slot[j].value == value){
-					hash_table.top_buckets[idx_list[i]].token[j] = 0;
-					printk("hash value deleted : idx : %d, key : %d, value : %x\n", idx_list[i], key, value);
-					return 0;
-				}
+				hash_table.top_buckets[idx_list[i]].token[j] = 0;
+				printk("hash value deleted : idx : %d, key : %d, value : %x\n", idx_list[i], key, value);
+				return 0;
 			}
 			if(hash_table.bottom_buckets[idx_list[i]/2].token[j] == 1
 				&& hash_table.bottom_buckets[idx_list[i]/2].slot[j].key == key){
-				if(hash_table.bottom_buckets[idx_list[i]/2].slot[j].value ==value){
-					hash_table.bottom_buckets[idx_list[i]/2].token[j] = 0;
-					printk("hash value deleted : idx : %d, key : %d, value : %x\n", idx_list[i]/2, key, value);
-					return 0;
-				}
+				hash_table.bottom_buckets[idx_list[i]/2].token[j] = 0;
+				printk("hash value deleted : idx : %d, key : %d, value : %x\n", idx_list[i]/2, key, value);
+				return 0;
 			}
 		}
 	}

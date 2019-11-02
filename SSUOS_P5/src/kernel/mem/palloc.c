@@ -101,16 +101,16 @@ palloc_get_multiple (size_t page_cnt)
 		if(level_insert(0, s_idx, key, value) == -1){
 			if(level_insert(1, f_idx, key, value) == -1){
 				if(level_insert(1, s_idx, key, value) == -1){
-					if(moveBucket(0, f_idx) == 0)
+					if(move_bucket(0, f_idx, value) == 0)
 						level_insert(0, f_idx, key, value);
 					else{
-						if(moveBucket(0, s_idx) == 0)
+						if(move_bucket(0, s_idx, value) == 0)
 							level_insert(0, s_idx, key, value);
 						else{
-							if(moveBucket(1, f_idx) == 0)
+							if(move_bucket(1, f_idx, value) == 0)
 								level_insert(1, f_idx, key, value);
 							else{
-								if(moveBucket(1, s_idx) == 0)
+								if(move_bucket(1, s_idx, value) == 0)
 									level_insert(1, s_idx, key, value);
 								else{
 									return NULL;
