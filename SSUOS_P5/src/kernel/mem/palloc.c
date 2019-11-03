@@ -93,40 +93,8 @@ palloc_get_multiple (size_t page_cnt)
 	{
 		memset (pages, 0, PAGE_SIZE * page_cnt);
 	}
-	f_idx = F_IDX((uint32_t *)pages, CAPACITY);
-	s_idx = S_IDX((uint32_t *)pages, CAPACITY);
-	key = pte_idx_addr(pages);
-	value = VH_TO_RH(pages);
-	if(level_insert(0, f_idx, key, value) == -1){
-		if(level_insert(0, s_idx, key, value) == -1){
-			if(level_insert(1, f_idx, key, value) == -1){
-				if(level_insert(1, s_idx, key, value) == -1){
-					if(move_bucket(0, f_idx, value) == 0)
-						level_insert(0, f_idx, key, value);
-					else{
-						if(move_bucket(0, s_idx, value) == 0)
-							level_insert(0, s_idx, key, value);
-						else{
-							if(move_bucket(1, f_idx, value) == 0)
-								level_insert(1, f_idx, key, value);
-							else{
-								if(move_bucket(1, s_idx, value) == 0)
-									level_insert(1, s_idx, key, value);
-								else{
-									return NULL;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-			
-	
-	
-
-
+	if(level_insert((uint32_t *)pages) == -1)
+		return NULL;
 	return (uint32_t*)pages; 
 }
 

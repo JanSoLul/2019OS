@@ -34,7 +34,40 @@ void init_hash_table(void)
 	}
 }
 
-int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value){
+int level_insert(uint32_t *pages){
+	uint32_t f_idx, s_idx, key, value;
+	f_idx = F_IDX(pages, CAPACITY);
+	s_idx = S_IDX(pages, CAPACITY);
+	key = pte_idx_addr(pages);
+	value = VH_TO_RH(pages);
+	if(insert_item(0, f_idx, key, value) == 0)
+		return 0;
+	if(insert_item(0, s_idx, key, value) == 0)
+		return 0;
+	if(insert_item(1, f_idx, key, value) == 0)
+		return 0;
+	if(insert_item(1, s_idx, key, value) == 0)
+		return 0;
+	if(move_bucket(0, f_idx, value) == 0){
+		insert_item(0, f_idx, key, value);
+		return 0;
+	}
+	if(move_bucket(0, s_idx, value) == 0){
+		insert_item(0, s_idx, key, value);
+		return 0;
+	}
+	if(move_bucket(1, f_idx, value) == 0){
+		insert_item(1, f_idx, key, value);
+		return 0;
+	}
+	if(move_bucket(1, s_idx, value) == 0){
+		insert_item(1, s_idx, key, value);
+		return 0;
+	}
+	return -1;
+}
+
+int insert_item(int tb, uint32_t idx, uint32_t key, uint32_t value){
 	int si = get_slot_num(tb, idx);
 	if(si == -1)
 		return -1;
@@ -51,7 +84,6 @@ int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value){
 		hash_table.bottom_buckets[idx/2].token[si] = 1;
 		printk("hash value inserted in bottom level : idx : %d, key : %d, value : %x\n", idx, key, value);
 		return 0;
-
 	}
 }
 
@@ -73,40 +105,37 @@ int get_slot_num(int tb, uint32_t idx){
 }
 
 int move_bucket(int tb, uint32_t idx, uint32_t value){
-	int i=0;
 	int si;
-	int tmp;
-	int f_idx, s_idx;
+	int f_idx, s_idx, target_idx;
+	uint32_t *tmp_page;
 
+	tmp_page = RH_TO_VH(value);
+	f_idx = F_IDX(tmp_page, CAPACITY);
+	s_idx = S_IDX(tmp_page, CAPACITY);
+	if(idx == f_idx)
+		target_idx = s_idx;
+	else
+		target_idx = f_idx;
 	if(tb == 0){
-		tmp = f_idx;
-		if((si = get_slot_num(tb, f_idx)) == -1){
-			tmp = s_idx;
-			if((si = get_slot_num(tb, s_idx)) == -1){
-				return -1;
-			}
-		}
-		hash_table.top_buckets[tmp].token[si] = 1;
-		hash_table.top_buckets[tmp].slot[si].key = hash_table.top_buckets[idx].slot[0].key;
-		hash_table.top_buckets[tmp].slot[si].value = hash_table.top_buckets[idx].slot[0].value;
+		if((si = get_slot_num(tb, target_idx)) == -1)
+			return -1;
+		hash_table.top_buckets[target_idx].token[si] = 1;
+		hash_table.top_buckets[target_idx].slot[si].key = hash_table.top_buckets[idx].slot[0].key;
+		hash_table.top_buckets[target_idx].slot[si].value = hash_table.top_buckets[idx].slot[0].value;
 		hash_table.top_buckets[idx].token[0] = 0;
-
+		return 0;
 	}
 	else{
-		tmp = f_idx/2;
-		if((si = get_slot_num(tb, f_idx)) == -1){
-			tmp = s_idx/2;
-			if((si = get_slot_num(tb, s_idx)) == -1){
-				return -1;
-			}
-		}
-		hash_table.bottom_buckets[tmp].token[si] = 1;
-		hash_table.bottom_buckets[tmp].slot[si].key = hash_table.bottom_buckets[idx/2].slot[0].key;
-		hash_table.bottom_buckets[tmp].slot[si].value = hash_table.bottom_buckets[idx/2].slot[0].value;
+		target_idx /= 2;
+		if((si = get_slot_num(tb, target_idx)) == -1)
+			return -1;
+		hash_table.bottom_buckets[target_idx].token[si] = 1;
+		hash_table.bottom_buckets[target_idx].slot[si].key = hash_table.bottom_buckets[idx/2].slot[0].key;
+		hash_table.bottom_buckets[target_idx].slot[si].value = hash_table.bottom_buckets[idx/2].slot[0].value;
 		hash_table.bottom_buckets[idx/2].token[0] = 0;
+		return 0;
 	}
-	return 0;
-}
+}	
 
 int level_delete(uint32_t f_idx, uint32_t s_idx, uint32_t key, uint32_t value){
 	int i, j;
