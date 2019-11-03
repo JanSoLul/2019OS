@@ -137,9 +137,14 @@ int move_bucket(int tb, uint32_t idx, uint32_t value){
 	}
 }	
 
-int level_delete(uint32_t f_idx, uint32_t s_idx, uint32_t key, uint32_t value){
+int level_delete(uint32_t *pages){
 	int i, j;
+	uint32_t f_idx = F_IDX(pages, CAPACITY);
+	uint32_t s_idx = S_IDX(pages, CAPACITY);
+	uint32_t key, value;
 	uint32_t idx_list[2] = {f_idx, s_idx};
+	key = pte_idx_addr(pages);
+	value = VH_TO_RH(pages);
 	for(i=0; i<2; i++){
 		for(j=0; j<SLOT_NUM; j++){
 			if(hash_table.top_buckets[idx_list[i]].token[j] == 1

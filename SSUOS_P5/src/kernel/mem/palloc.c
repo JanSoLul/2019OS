@@ -132,14 +132,7 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 		khpage->next->nalloc = page_cnt;
 		khpage->next->next = NULL;
 	}
-	f_idx = F_IDX((uint32_t *)pages, CAPACITY);
-	s_idx = S_IDX((uint32_t *)pages, CAPACITY);
-	key = pte_idx_addr(pages);
-	value = VH_TO_RH(pages);
-	level_delete(f_idx, s_idx, key, value);
-	
-	
-
+	level_delete((uint32_t *)pages);
 
 	freelist.nfree++;
 }

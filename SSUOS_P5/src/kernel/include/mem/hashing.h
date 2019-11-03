@@ -36,10 +36,9 @@ uint32_t F_IDX(uint32_t addr, uint32_t capacity);	// Get first index to use at t
 uint32_t S_IDX(uint32_t addr, uint32_t capacity);	// Get second index to use at table
 int level_insert(uint32_t *pages);
 int insert_item(int tb, uint32_t idx, uint32_t key, uint32_t value);
-//int level_insert(int tb, uint32_t idx, uint32_t key, uint32_t value);
 int get_slot_num(int tb, uint32_t idx);
 int move_bucket(int tb, uint32_t idx, uint32_t value);
-int level_delete(uint32_t f_idx, uint32_t s_idx, uint32_t key, uint32_t value);
+int level_delete(uint32_t *pages);
 
 
 #endif
