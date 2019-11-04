@@ -56,7 +56,6 @@ palloc_get_multiple (size_t page_cnt)
 	struct khpage *khpage = freelist.list;
 	struct khpage *prepage = freelist.list;
 	size_t page_idx;
-	uint32_t f_idx, s_idx, key, value;
 
 	if (page_cnt == 0)
 		return NULL;
@@ -112,7 +111,6 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 {
 	struct khpage *khpage = freelist.list;
 	size_t page_idx = (((uint32_t)pages - VKERNEL_HEAP_START) / PAGE_SIZE);
-	uint32_t f_idx, s_idx, key, value;
 
 	if (pages == NULL || page_cnt == 0)
 		return;
