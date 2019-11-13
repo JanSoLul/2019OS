@@ -35,23 +35,32 @@ struct freelist{
 static struct khpage *khpage_list;
 static struct freelist freelist;
 static uint32_t page_alloc_index;
+static struct memory_pool user_pool;
+static struct memory_pool kernel_pool;
 
 /* Initializes the page allocator. */
 //
 	void
 init_palloc (void) 
 {
-	/* Calculate the space needed for the khpage list */
-	size_t bm_size = sizeof(struct khpage) * 1024;
+	size_t kernel_pages, user_pages;
+	size_t bm_size;
 
-	/* khpage list alloc */
-	khpage_list = (struct khpage *)(KERNEL_ADDR);
+	kernel_pages = (USER_POOL_START - KSERNEL_ADDR) / PAGE_SIZE;
+	user_pages = (RKERNEL_HEAP_START - USER_POOL_START) / PAGE_SIZE;
+	init_pool(kernel_pool, (uint32_t *)KERNEL_ADDR, kernel_pages);
+	init_pool(user_pool, (uint32_t *)USER_POOL_START, kernel_pages);
+}
 
-	/* initialize */
-	memset((void*)khpage_list, 0, bm_size);
-	page_alloc_index = 0;
-	freelist.list = NULL;
-	freelist.nfree = 0;
+void init_pool(struct memory_pool *pool, uint32_t *addr, size_t page_count){
+	size_t bm_pages = DIV_ROUND_UP(bitmap_struct_size(page_cnt), PAGE_SIZE);
+	if(bm_pages > page_cnt)
+		printk("check!\n");
+	page_cnt -= bm_pages;
+	
+	pool->lock = 0;
+	pool->bitmap = create_bitmap(page_cnt, addr, bm_pages * PAGE_SIZE);  
+	pool->addr = addr + ba_pages * PAGE_SIZE;
 }
 
 
@@ -61,7 +70,7 @@ init_palloc (void)
 	uint32_t *
 palloc_get_multiple_page (size_t page_cnt)
 {
-	void *pages = NULL;
+	/*void *pages = NULL;
 	struct khpage *khpage = freelist.list;
 	struct khpage *prepage = freelist.list;
 	size_t page_idx;
@@ -100,6 +109,7 @@ palloc_get_multiple_page (size_t page_cnt)
 	}
 
 	return (uint32_t*)pages; 
+	*/
 }
 
 /* Obtains a single free page and returns its address.
@@ -114,6 +124,7 @@ palloc_get_one_page (void)
 	void
 palloc_free_multiple_page (void *pages, size_t page_cnt) 
 {
+	/*
 	struct khpage *khpage = freelist.list;
 	size_t page_idx = (((uint32_t)pages - VKERNEL_HEAP_START) / PAGE_SIZE);
 
@@ -137,6 +148,7 @@ palloc_free_multiple_page (void *pages, size_t page_cnt)
 	}
 
 	freelist.nfree++;
+	*/
 }
 
 /* Frees the page at PAGE. */
@@ -149,41 +161,43 @@ palloc_free_one_page (void *page)
 
 void palloc_pf_test(void)
 {
-	// uint32_t *one_page1 = palloc_get_one_page(user_areWWa);
-	// uint32_t *one_page2 = palloc_get_one_page(user_area);
-	// uint32_t *two_page1 = palloc_get_multiple_page(user_area,2);
-	// uint32_t *three_page;
-	// printk("one_page1 = %x\n", one_page1); 
-	// printk("one_page2 = %x\n", one_page2); 
-	// printk("two_page1 = %x\n", two_page1);
+	/*
+	uint32_t *one_page1 = palloc_get_one_page(user_areWWa);
+	uint32_t *one_page2 = palloc_get_one_page(user_area);
+	uint32_t *two_page1 = palloc_get_multiple_page(user_area,2);
+	uint32_t *three_page;
+	printk("one_page1 = %x\n", one_page1); 
+	printk("one_page2 = %x\n", one_page2); 
+	printk("two_page1 = %x\n", two_page1);
 
-	// printk("=----------------------------------=\n");
-	// palloc_free_one_page(one_page1);
-	// palloc_free_one_page(one_page2);
-	// palloc_free_multiple_page(two_page1,2);
+	printk("=----------------------------------=\n");
+	palloc_free_one_page(one_page1);
+	palloc_free_one_page(one_page2);
+	palloc_free_multiple_page(two_page1,2);
 
-	// one_page1 = palloc_get_one_page(user_area);
-	// one_page2 = palloc_get_one_page(user_area);
-	// two_page1 = palloc_get_multiple_page(user_area,2);
+	one_page1 = palloc_get_one_page(user_area);
+	one_page2 = palloc_get_one_page(user_area);
+	two_page1 = palloc_get_multiple_page(user_area,2);
 
-	// printk("one_page1 = %x\n", one_page1);
-	// printk("one_page2 = %x\n", one_page2);
-	// printk("two_page1 = %x\n", two_page1);
+	printk("one_page1 = %x\n", one_page1);
+	printk("one_page2 = %x\n", one_page2);
+	printk("two_page1 = %x\n", two_page1);
 
-	// printk("=----------------------------------=\n");
-	// palloc_free_multiple_page(one_page2, 3);
-	// one_page2 = palloc_get_one_page(user_area);
-	// three_page = palloc_get_multiple_page(user_area,3);
+	printk("=----------------------------------=\n");
+	palloc_free_multiple_page(one_page2, 3);
+	one_page2 = palloc_get_one_page(user_area);
+	three_page = palloc_get_multiple_page(user_area,3);
 
-	// printk("one_page1 = %x\n", one_page1);
-	// printk("one_page2 = %x\n", one_page2);
-	// printk("three_page = %x\n", three_page);
+	printk("one_page1 = %x\n", one_page1);
+	printk("one_page2 = %x\n", one_page2);
+	printk("three_page = %x\n", three_page);
 
-	// palloc_free_one_page(one_page1);
-	// palloc_free_one_page(three_page);
-	// three_page = (uint32_t*)((uint32_t)three_page + 0x1000);
-	// palloc_free_one_page(three_page);
-	// three_page = (uint32_t*)((uint32_t)three_page + 0x1000);
-	// palloc_free_one_page(three_page);
-	// palloc_free_one_page(one_page2);
+	palloc_free_one_page(one_page1);
+	palloc_free_one_page(three_page);
+	three_page = (uint32_t*)((uint32_t)three_page + 0x1000);
+	palloc_free_one_page(three_page);
+	three_page = (uint32_t*)((uint32_t)three_page + 0x1000);
+	palloc_free_one_page(three_page);
+	palloc_free_one_page(one_page2);
+	*/
 }

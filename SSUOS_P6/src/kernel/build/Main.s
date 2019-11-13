@@ -1084,8 +1084,6 @@ print_contributors:
 	.string	"sizetype"
 .LASF34:
 	.string	"SYS_NUM"
-.LASF56:
-	.string	"/home/oslab/test/2019mem_example/src/kernel"
 .LASF17:
 	.string	"blk_size"
 .LASF35:
@@ -1116,6 +1114,8 @@ print_contributors:
 	.string	"main_init"
 .LASF52:
 	.string	"AUTHOR"
+.LASF56:
+	.string	"/home/jiwoong/2019OS/SSUOS_P6/src/kernel"
 .LASF51:
 	.string	"VERSION"
 .LASF29:
@@ -1186,5 +1186,5 @@ print_contributors:
 	.string	"SYS_LIST"
 .LASF25:
 	.string	"next"
-	.ident	"GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.10) 5.4.0 20160609"
+	.ident	"GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.12) 5.4.0 20160609"
 	.section	.note.GNU-stack,"",@progbits
