@@ -53,10 +53,8 @@ uint32_t scale_down(uint32_t base, uint32_t size)
 
 void init_paging()
 {
-	uint32_t *page_dir = palloc_get_one_page();
-	uint32_t *page_tbl = palloc_get_one_page();
-	page_dir = VH_TO_RH(page_dir);
-	page_tbl = VH_TO_RH(page_tbl);
+	uint32_t *page_dir = palloc_get_one_page(kernel_area);
+	uint32_t *page_tbl = palloc_get_one_page(kernel_area);
 	PID0_PAGE_DIR = page_dir;
 
 	int NUM_PT, NUM_PE;
@@ -140,23 +138,21 @@ uint32_t* pg_addr(uint32_t* addr)
 /*
     page table 복사
 */
-void  pt_copy(uint32_t *pd, uint32_t *dest_pd, uint32_t idx)
+void  pt_copy(uint32_t *pd, uint32_t *dest_pd, uint32_t idx, uint32_t *start, uint32_t *end, bool share)
 {
 	uint32_t *pt = pt_pde(pd[idx]);
 	uint32_t *new_pt;
 	uint32_t i;
 
-	pt = RH_TO_VH(pt);
-    new_pt = palloc_get_one_page();
+	printk("copy\n");
+   	new_pt = palloc_get_one_page(kernel_area);
  
     for(i = 0; i<1024; i++)
     {
       	if(pt[i] & PAGE_FLAG_PRESENT)
     	{
-            new_pt = VH_TO_RH(new_pt);
-            dest_pd[idx] = (uint32_t)new_pt | (pd[idx] & ~PAGE_MASK_BASE & ~    PAGE_FLAG_ACCESS);
-            new_pt = RH_TO_VH(new_pt);
-            new_pt[i] = pt[i];
+			dest_pd[idx] = (uint32_t)new_pt | (pd[idx] & ~PAGE_MASK_BASE & ~    PAGE_FLAG_ACCESS);
+			new_pt[i] = pt[i];
         }
     }
 }
@@ -165,23 +161,24 @@ void  pt_copy(uint32_t *pd, uint32_t *dest_pd, uint32_t idx)
     page directory 복사. 
     커널 영역 복사나 fork에서 사용
 */
-void pd_copy(uint32_t* from, uint32_t* to)
+
+//void pd_copy(uint32_t* from, uint32_t* to)
+void pd_copy(uint32_t *pd, uint32_t *dest_pd, uint32_t idx, uint32_t *start, uint32_t *end, bool share)
 {
 	uint32_t i;
 
 	for(i = 0; i < 1024; i++)
 	{
-		if(from[i] & PAGE_FLAG_PRESENT)
-			pt_copy(from, to, i);
+		if(pd[i] & PAGE_FLAG_PRESENT)
+			pt_copy(pd, dest_pd, i, start, end, share);
 	}
 }
 
 uint32_t* pd_create (pid_t pid)
 {
-	uint32_t *pd = palloc_get_one_page();
+	uint32_t *pd = palloc_get_one_page(kernel_area);
 
-	pd_copy(RH_TO_VH((uint32_t*)read_cr3()), pd);
-    pd = VH_TO_RH(pd);
+	pd_copy((uint32_t*)read_cr3(), pd, 0, (uint32_t*)KERNEL_ADDR, (uint32_t*)USER_POOL_START, true);
 
 	return pd;
 }
@@ -214,13 +211,12 @@ void pf_handler(struct intr_frame *iframe)
     if(pta == NULL){
         write_cr0( read_cr0() & ~CR0_FLAG_PG);
 
-        pta = palloc_get_one_page();
-        pta = VH_TO_RH(pta);
+		printk("page fault\n");
+        pta = palloc_get_one_page(kernel_area);
         memset(pta,0,PAGE_SIZE);
         
         pda[pdi] = (uint32_t)pta | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
 
-        fault_addr = VH_TO_RH(fault_addr);
         pta[pti] = (uint32_t)fault_addr | PAGE_FLAG_RW  | PAGE_FLAG_PRESENT;
 
         pta = RH_TO_VH(pta);
@@ -228,13 +224,12 @@ void pf_handler(struct intr_frame *iframe)
         pti = pte_idx_addr(pta);
 
         uint32_t *tmp_pta = pt_pde(pda[pdi]);
-        tmp_pta[pti] = (uint32_t)VH_TO_RH(pta) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
+        tmp_pta[pti] = (uint32_t)pta | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
 
         write_cr0( read_cr0() | CR0_FLAG_PG);
     }
     else{
         pta = RH_TO_VH(pta);
-        fault_addr = VH_TO_RH(fault_addr);
         pta[pti] = (uint32_t)fault_addr | PAGE_FLAG_RW  | PAGE_FLAG_PRESENT;
     }
 }

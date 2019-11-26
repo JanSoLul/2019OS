@@ -191,7 +191,7 @@ pid_t proc_create(proc_func func, struct proc_option *opt, void* aux)
 	p->simple_lock = 0;
 	p->child_pid = -1;
 
-    int *top = (int*)palloc_get_one_page();
+    int *top = (int*)palloc_get_one_page(kernel_area);
 	int stack = (int)top;
 	top = (int*)stack + STACK_SIZE - 1;
 
@@ -251,9 +251,9 @@ void proc_free(void)
 	list_push_back(&d_list, &cur_process->elem_stat);
 
 	palloc_free_one_page(cur_process->stack);
-	palloc_free_one_page(RH_TO_VH(cur_process->pd));
-	palloc_free_one_page(RH_TO_VH(pt));
-	palloc_free_one_page(RH_TO_VH(pt2));
+	palloc_free_one_page(cur_process->pd);
+	palloc_free_one_page(pt);
+	palloc_free_one_page(pt2);
 }
 
 void proc_end(void)

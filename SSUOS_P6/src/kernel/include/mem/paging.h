@@ -35,7 +35,7 @@
 
 
 //필요에 따라 수정할 것
-#define RKERNEL_HEAP_START	0x00200000		// 실제 메모리 페이지 할당 시작 주소  pool 구성시 수정할 것
+#define RKERNEL_HEAP_START	0x02000000		// 실제 메모리 페이지 할당 시작 주소  pool 구성시 수정할 것
 #define VKERNEL_HEAP_START		0xc0000000  // 가상 메모리 페이지 할당 시작 주소
 #define USER_POOL_START		0x3e0000
 #define VH_TO_RH(addr) (uint32_t *)((uint32_t)addr - VKERNEL_HEAP_START + RKERNEL_HEAP_START)

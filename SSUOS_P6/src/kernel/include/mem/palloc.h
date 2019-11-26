@@ -11,9 +11,8 @@ enum palloc_flags
 
 
 void init_palloc (void);
-void init_pool(struct memory_pool *pool, uint32_t *addr, size_t page_count);
-uint32_t *palloc_get_one_page (void);
-uint32_t *palloc_get_multiple_page (size_t page_cnt);
+uint32_t *palloc_get_one_page (enum palloc_flags flags);
+uint32_t *palloc_get_multiple_page (enum palloc_flags flags, size_t page_cnt);
 void palloc_free_one_page (void *);
 void palloc_free_multiple_page (void *, size_t page_cnt);
 void palloc_pf_test(void);
